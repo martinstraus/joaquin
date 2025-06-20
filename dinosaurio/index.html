@@ -66,6 +66,10 @@
 </div>
 <canvas id="gameCanvas"></canvas>
 <script>
+let eggs = [];
+const eggIcon = '🥚';
+const eggSize = 32;
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -220,10 +224,59 @@ function drawHexGrid(size) {
     }
 }
 
+const hatchSound = new Audio('https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa4c7b.mp3'); // Fun pop sound
+
+function placeRandomEgg() {
+    const minX = 200;
+    const maxX = canvas.width - eggSize;
+    const minY = 20;
+    const maxY = canvas.height - eggSize;
+    const x = Math.floor(Math.random() * (maxX - minX)) + minX;
+    const y = Math.floor(Math.random() * (maxY - minY)) + minY;
+    // Set hatch time between 3 and 6 seconds
+    const hatchTime = 3000 + Math.random() * 3000;
+    const egg = { x, y, hatching: true };
+    eggs.push(egg);
+    draw();
+    setTimeout(() => {
+        // When hatching, replace egg with a random dinosaur
+        const idx = eggs.indexOf(egg);
+        if (idx !== -1) {
+            eggs.splice(idx, 1);
+            // Play hatch sound
+            hatchSound.currentTime = 0;
+            hatchSound.play();
+            // Random dino type: 0 or 1
+            const type = Math.floor(Math.random() * dinoImages.length);
+            const dino = new Dinosaur(x, y, dinoImages[type]);
+            dinosaurs.push(dino);
+            draw();
+        }
+    }, hatchTime);
+}
+
+function scheduleNextEgg() {
+    // Random delay: 20s to 40s
+    const delay = 10000 + Math.random() * 10000;
+    setTimeout(() => {
+        placeRandomEgg();
+        scheduleNextEgg();
+    }, delay);
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const hexSize = 45;
     drawHexGrid(hexSize);
+
+    // Draw eggs
+    for (const egg of eggs) {
+        ctx.save();
+        ctx.font = `${eggSize}px sans-serif`;
+        ctx.textBaseline = 'top';
+        ctx.fillText(eggIcon, egg.x, egg.y);
+        ctx.restore();
+    }
 
     // Draw dinosaurs
     for (const dino of dinosaurs) {
@@ -306,6 +359,9 @@ function enableRandomMovement() {
         draw();
     }, 100);
 }
+
+// At the end of script, start egg scheduling
+scheduleNextEgg();
 </script>
 </body>
 </html>
