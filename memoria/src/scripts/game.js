@@ -8,8 +8,6 @@ let lock = false;
 const grid = document.getElementById('card-grid');
 const player1 = document.getElementById('player1');
 const player2 = document.getElementById('player2');
-const player1 = document.getElementById('player1');
-const player2 = document.getElementById('player2');
 const score1 = document.getElementById('score1');
 const score2 = document.getElementById('score2');
 const team1 = document.getElementById('team1');
@@ -17,9 +15,6 @@ const team2 = document.getElementById('team2');
 const instructions = document.getElementById('instructions');
 const winner = document.getElementById('winner');
 const players = ['Joaquín', 'Martín'];
-
-const players = ['Joaquín', 'Martín'];
-
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -41,11 +36,8 @@ function startGame() {
   score2.textContent = '0';
   team1.classList.add('active');
   team2.classList.remove('active');
-  instructions.textContent = '¡Empieza Joaquín!';
-  instructions.textContent = '¡Empieza Joaquín!';
+  instructions.textContent = `¡Empieza ${players[0]}!`;
   winner.textContent = '';
-  player1.textContent = players[0];
-  player2.textContent = players[1];
   player1.textContent = players[0];
   player2.textContent = players[1];
   renderGrid();
@@ -93,7 +85,7 @@ function checkMatch() {
     if (matched.length === cards.length) {
       endGame();
     } else {
-      instructions.textContent = `Good job! Team ${currentTeam+1} gets another turn.`;
+      instructions.textContent = `¡Buen trabajo! ${players[currentTeam]} suma 1 punto y sigue jugando.`;
     }
     revealed = [];
     lock = false;
