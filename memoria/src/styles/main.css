@@ -1,17 +1,30 @@
-body { text-align: center; background: #f0f8ff; }
-.scoreboard { margin: 20px 0; font-size: 1.2em; }
-.scoreboard span.active { font-weight: bold; color: #2196f3; }
+body {
+  text-align: center;
+  background: #f0f8ff;
+}
+
+.scoreboard {
+  margin: 20px 0;
+  font-size: 1.2em;
+}
+
+.scoreboard span.active {
+  font-weight: bold;
+  color: #2196f3;
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(6, 80px);
-  grid-template-rows: repeat(3, 80px);
+  grid-template-columns: repeat(6, 160px);
+  grid-template-rows: repeat(3, 160px);
   gap: 10px;
   justify-content: center;
   margin-bottom: 20px;
 }
+
 .card {
-  width: 80px;
-  height: 80px;
+  width: 160px;
+  height: 160px;
   font-size: 2em;
   background: #4caf50;
   color: #4caf50;
@@ -22,36 +35,45 @@ body { text-align: center; background: #f0f8ff; }
   position: relative;
   user-select: none;
 }
-.card.revealed, .card.matched {
+
+.card.revealed,
+.card.matched {
   background: #fff;
   color: #222;
   cursor: default;
 }
+
 .card.matched {
   background: #b2dfdb;
   color: #222;
 }
+
 .instructions {
   margin-bottom: 20px;
   font-size: 1em;
   color: #333;
 }
+
 .winner {
   font-size: 1.5em;
   color: #e91e63;
   margin-top: 20px;
   font-weight: bold;
 }
+
 .reset-btn {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 1em;
-  background: #2196f3;
+  background: linear-gradient(90deg, #ff8a00, #e52e71);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 25px;
+  padding: 12px 32px;
+  font-size: 1.2em;
+  font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 4px 15px rgba(229, 46, 113, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
+
 .reset-btn:hover {
   background: #1976d2;
 }
