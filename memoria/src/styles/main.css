@@ -1,4 +1,4 @@
-body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
+body { text-align: center; background: #f0f8ff; }
 .scoreboard { margin: 20px 0; font-size: 1.2em; }
 .scoreboard span.active { font-weight: bold; color: #2196f3; }
 .grid {
