@@ -4,15 +4,78 @@
     <meta charset="UTF-8">
     <title>Dinosaur Canvas Game</title>
     <style>
-        body { margin: 0; background: #e0f7fa; }
-        canvas { display: block; margin: 0 auto; background: #a7ffeb; }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body { 
+            background: #e0f7fa; 
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 180px;
+            height: 100vh;
+            background: #b2dfdb;
+            box-shadow: 2px 0 8px #0002;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+        }
+        .sidebar h2 {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        .sidebar button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            background: #4caf50;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .sidebar button:hover {
+            background: #388e3c;
+        }
+        canvas { 
+            display: block; 
+            margin: 0; 
+            background: #a7ffeb; 
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+        }
     </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="500"></canvas>
+<div class="sidebar">
+    <h2>Add Dinosaur</h2>
+    <button onclick="addDinosaur(0)">Add Sauropod 🦕</button>
+    <button onclick="addDinosaur(1)">Add T-Rex 🦖</button>
+</div>
+<canvas id="gameCanvas"></canvas>
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// Resize canvas to fill window
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    draw();
+}
+window.addEventListener('resize', resizeCanvas);
 
 // Dinosaur image URLs (OpenMoji PNGs)
 const dinoImages = [
@@ -28,6 +91,10 @@ class Dinosaur {
         this.img = new Image();
         this.img.src = imgUrl;
         this.selected = false;
+        // Add stats
+        this.health = 100;
+        this.hunger = 100;
+        this.hygene = 100;
     }
 
     draw(ctx) {
@@ -42,12 +109,72 @@ class Dinosaur {
             ctx.restore();
         }
         ctx.drawImage(this.img, this.x, this.y, this.size, this.size);
+        // Draw stats bars below the dinosaur
+        const barWidth = this.size;
+        const barHeight = 7;
+        const spacing = 3;
+        const iconSize = 10; // Match bar height
+        const iconOffset = 4;
+        const startY = this.y + this.size + 5;
+        // Health (red)
+        ctx.save();
+        ctx.fillStyle = '#e53935';
+        ctx.fillRect(
+            this.x + iconSize + iconOffset,
+            startY,
+            (barWidth - iconSize - iconOffset) * (this.health / 100),
+            barHeight
+        );
+        ctx.strokeStyle = '#b71c1c';
+        ctx.strokeRect(this.x + iconSize + iconOffset, startY, barWidth - iconSize - iconOffset, barHeight);
+        ctx.font = `bold ${iconSize}px sans-serif`;
+        ctx.textBaseline = 'top';
+        ctx.fillText('❤', this.x, startY - 1);
+        ctx.restore();
+        // Hunger (yellow)
+        ctx.save();
+        ctx.fillStyle = '#fbc02d';
+        ctx.fillRect(
+            this.x + iconSize + iconOffset,
+            startY + barHeight + spacing,
+            (barWidth - iconSize - iconOffset) * (this.hunger / 100),
+            barHeight
+        );
+        ctx.strokeStyle = '#f57c00';
+        ctx.strokeRect(this.x + iconSize + iconOffset, startY + barHeight + spacing, barWidth - iconSize - iconOffset, barHeight);
+        ctx.font = `bold ${iconSize}px sans-serif`;
+        ctx.textBaseline = 'top';
+        ctx.fillText('🍖', this.x, startY + barHeight + spacing - 1);
+        ctx.restore();
+        // Hygene (blue)
+        ctx.save();
+        ctx.fillStyle = '#039be5';
+        ctx.fillRect(
+            this.x + iconSize + iconOffset,
+            startY + 2 * (barHeight + spacing),
+            (barWidth - iconSize - iconOffset) * (this.hygene / 100),
+            barHeight
+        );
+        ctx.strokeStyle = '#01579b';
+        ctx.strokeRect(this.x + iconSize + iconOffset, startY + 2 * (barHeight + spacing), barWidth - iconSize - iconOffset, barHeight);
+        ctx.font = `bold ${iconSize}px sans-serif`;
+        ctx.textBaseline = 'top';
+        ctx.fillText('🧼', this.x, startY + 2 * (barHeight + spacing) - 1);
+        ctx.restore();
     }
 
     isPointInside(px, py) {
         // Simple bounding box hit test
         return px >= this.x && px <= this.x + this.size &&
                py >= this.y && py <= this.y + this.size;
+    }
+
+    moveRandomly(canvasWidth, canvasHeight) {
+        // Move by a small random delta, but stay within canvas bounds
+        const dx = Math.floor(Math.random() * 11) - 5; // -5 to +5
+        const dy = Math.floor(Math.random() * 11) - 5; // -5 to +5
+        this.x = Math.max(0, Math.min(canvasWidth - this.size, this.x + dx));
+        this.y = Math.max(0, Math.min(canvasHeight - this.size, this.y + dy));
     }
 }
 
@@ -56,9 +183,7 @@ const dinosaurs = [
     new Dinosaur(500, 200, dinoImages[1])
 ];
 
-let selectedDino = null;
-let offsetX = 0, offsetY = 0;
-let dragging = false;
+resizeCanvas();
 
 function drawHexagon(x, y, size, fillStyle, strokeStyle) {
     ctx.save();
@@ -79,7 +204,6 @@ function drawHexagon(x, y, size, fillStyle, strokeStyle) {
     ctx.restore();
 }
 
-
 function drawHexGrid(size) {
     const horizSpacing = size * Math.sqrt(3); // width between centers
     const vertSpacing = size * 1.5;           // height between rows
@@ -95,9 +219,6 @@ function drawHexGrid(size) {
         }
     }
 }
-
-
-
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -123,7 +244,23 @@ dinosaurs.forEach(d => {
     };
 });
 
+function addDinosaur(type) {
+    // Avoid left menu area (sidebar width = 180px)
+    const minX = 200;
+    const maxX = canvas.width - 120;
+    const minY = 20;
+    const maxY = canvas.height - 120;
+    const x = Math.floor(Math.random() * (maxX - minX)) + minX;
+    const y = Math.floor(Math.random() * (maxY - minY)) + minY;
+    const dino = new Dinosaur(x, y, dinoImages[type]);
+    dino.img.onload = () => draw();
+    dinosaurs.push(dino);
+    draw();
+}
+
+// Remove all drag and selection logic from event listeners
 canvas.addEventListener('mousedown', (e) => {
+    // Only select a dinosaur (optional: highlight on click)
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
@@ -132,35 +269,43 @@ canvas.addEventListener('mousedown', (e) => {
         if (dino.isPointInside(mx, my)) {
             dinosaurs.forEach(d => d.selected = false);
             dino.selected = true;
-            selectedDino = dino;
-            offsetX = mx - dino.x;
-            offsetY = my - dino.y;
-            dragging = true;
             found = true;
             break;
         }
     }
     if (!found) {
         dinosaurs.forEach(d => d.selected = false);
-        selectedDino = null;
     }
     draw();
 });
 
-canvas.addEventListener('mousemove', (e) => {
-    if (dragging && selectedDino) {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-        selectedDino.x = mx - offsetX;
-        selectedDino.y = my - offsetY;
-        draw();
-    }
-});
+// Remove mousemove and mouseup listeners
 
-canvas.addEventListener('mouseup', () => {
-    dragging = false;
-});
+// Remove dragging variables
+// let selectedDino = null;
+// let offsetX = 0, offsetY = 0;
+// let dragging = false;
+
+// Add random movement interval
+enableRandomMovement();
+function enableRandomMovement() {
+    setInterval(() => {
+        for (const dino of dinosaurs) {
+            dino.moveRandomly(canvas.width, canvas.height);
+            // Randomly pick a stat to decrease: 0=health, 1=hunger, 2=hygene
+            const stat = Math.floor(Math.random() * 3);
+            const decrease = Math.random() * 1.0; // 0 to <1.0
+            if (stat === 0) {
+                dino.health = Math.max(0, dino.health - decrease);
+            } else if (stat === 1) {
+                dino.hunger = Math.max(0, dino.hunger - decrease);
+            } else {
+                dino.hygene = Math.max(0, dino.hygene - decrease);
+            }
+        }
+        draw();
+    }, 100);
+}
 </script>
 </body>
 </html>
