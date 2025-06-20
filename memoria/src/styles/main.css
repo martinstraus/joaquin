@@ -1,0 +1,57 @@
+body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
+.scoreboard { margin: 20px 0; font-size: 1.2em; }
+.scoreboard span.active { font-weight: bold; color: #2196f3; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 80px);
+  grid-template-rows: repeat(3, 80px);
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.card {
+  width: 80px;
+  height: 80px;
+  font-size: 2em;
+  background: #4caf50;
+  color: #4caf50;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
+  user-select: none;
+}
+.card.revealed, .card.matched {
+  background: #fff;
+  color: #222;
+  cursor: default;
+}
+.card.matched {
+  background: #b2dfdb;
+  color: #222;
+}
+.instructions {
+  margin-bottom: 20px;
+  font-size: 1em;
+  color: #333;
+}
+.winner {
+  font-size: 1.5em;
+  color: #e91e63;
+  margin-top: 20px;
+  font-weight: bold;
+}
+.reset-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1em;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.reset-btn:hover {
+  background: #1976d2;
+}
