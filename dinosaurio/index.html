@@ -283,6 +283,8 @@ let gameStarted = false;
 const bgMusic = new Audio('./sounds/music.mp3');
 bgMusic.loop = true;
 bgMusic.volume = 0.5; // Set a reasonable volume
+const pointsSound = new Audio('./sounds/points.mp3');
+const errorSound = new Audio('./sounds/error.mp3');
 
 function startGame() {
     if (gameStarted) return;
@@ -501,6 +503,7 @@ canvas.addEventListener('drop', (e) => {
     for (const dino of dinosaurs) {
         if (dino.isPointInside(mx, my)) {
             let statReplenished = false;
+            let wrongFood = false;
             if (draggingStat === 'health' && dino.health < 100) {
                 dino.health = 100;
                 statReplenished = true;
@@ -509,17 +512,30 @@ canvas.addEventListener('drop', (e) => {
                 dino.hygene = 100;
                 statReplenished = true;
             }
-            if (draggingStat === 'meat' && dino.type === 1 && dino.hunger < 100) {
-                dino.hunger = 100;
-                statReplenished = true;
+            if (draggingStat === 'meat') {
+                if (dino.type === 1 && dino.hunger < 100) {
+                    dino.hunger = 100;
+                    statReplenished = true;
+                } else if (dino.type === 0) {
+                    wrongFood = true;
+                }
             }
-            if (draggingStat === 'veggie' && dino.type === 0 && dino.hunger < 100) {
-                dino.hunger = 100;
-                statReplenished = true;
+            if (draggingStat === 'veggie') {
+                if (dino.type === 0 && dino.hunger < 100) {
+                    dino.hunger = 100;
+                    statReplenished = true;
+                } else if (dino.type === 1) {
+                    wrongFood = true;
+                }
             }
             if (statReplenished) {
                 points++;
                 updatePointsDisplay();
+                pointsSound.currentTime = 0;
+                pointsSound.play();
+            } else if (wrongFood) {
+                errorSound.currentTime = 0;
+                errorSound.play();
             }
             draw();
             break;
