@@ -116,6 +116,9 @@
             <span style="font-size:22px;">🧼</span>
         </div>
     </div>
+    <button id="musicToggleBtn" style="margin-top:30px; background:none; border:none; padding:0; cursor:pointer; width:100%; text-align:center;">
+        <span id="musicIcon" style="font-size:22px; vertical-align:middle;">🔊</span>
+    </button>
 </div>
 <canvas id="gameCanvas"></canvas>
 <script>
@@ -276,10 +279,21 @@ resizeCanvas();
 
 let gameStarted = false;
 
+// Background music
+const bgMusic = new Audio('./sounds/music.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.5; // Set a reasonable volume
+
 function startGame() {
     if (gameStarted) return;
     gameStarted = true;
     document.getElementById('startGameBtn').style.display = 'none';
+    // Play background music if enabled
+    if (typeof musicEnabled === 'undefined' || musicEnabled) {
+        bgMusic.currentTime = 0;
+        bgMusic.volume = 0.2;
+        bgMusic.play();
+    }
     // Place an initial egg at a random location
     placeRandomEgg();
     // Start egg scheduling
@@ -453,6 +467,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     updatePointsDisplay();
+
+    // Music toggle logic
+    const musicToggleBtn = document.getElementById('musicToggleBtn');
+    const musicIcon = document.getElementById('musicIcon');
+    let musicEnabled = true;
+    function updateMusicButton() {
+        musicIcon.textContent = musicEnabled ? '🔊' : '🔇';
+        musicIcon.style.color = musicEnabled ? '#4caf50' : '#bdbdbd';
+    }
+    updateMusicButton();
+    musicToggleBtn.addEventListener('click', () => {
+        musicEnabled = !musicEnabled;
+        if (musicEnabled) {
+            bgMusic.play();
+        } else {
+            bgMusic.pause();
+        }
+        updateMusicButton();
+    });
 });
 
 canvas.addEventListener('dragover', (e) => {
