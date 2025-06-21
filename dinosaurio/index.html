@@ -150,58 +150,60 @@ class Dinosaur {
             ctx.drawImage(this.img, this.x, this.y, this.size, this.size);
         }
         ctx.restore();
-        // Draw stats bars below the dinosaur
-        const barWidth = this.size;
-        const barHeight = 7;
-        const spacing = 3;
-        const iconSize = 10; // Match bar height
-        const iconOffset = 4;
-        const startY = this.y + this.size + 5;
-        // Health (red)
-        ctx.save();
-        ctx.fillStyle = '#e53935';
-        ctx.fillRect(
-            this.x + iconSize + iconOffset,
-            startY,
-            (barWidth - iconSize - iconOffset) * (this.health / 100),
-            barHeight
-        );
-        ctx.strokeStyle = '#b71c1c';
-        ctx.strokeRect(this.x + iconSize + iconOffset, startY, barWidth - iconSize - iconOffset, barHeight);
-        ctx.font = `bold ${iconSize}px sans-serif`;
-        ctx.textBaseline = 'top';
-        ctx.fillText('❤', this.x, startY - 1);
-        ctx.restore();
-        // Hunger (yellow)
-        ctx.save();
-        ctx.fillStyle = '#fbc02d';
-        ctx.fillRect(
-            this.x + iconSize + iconOffset,
-            startY + barHeight + spacing,
-            (barWidth - iconSize - iconOffset) * (this.hunger / 100),
-            barHeight
-        );
-        ctx.strokeStyle = '#f57c00';
-        ctx.strokeRect(this.x + iconSize + iconOffset, startY + barHeight + spacing, barWidth - iconSize - iconOffset, barHeight);
-        ctx.font = `bold ${iconSize}px sans-serif`;
-        ctx.textBaseline = 'top';
-        ctx.fillText('🍖', this.x, startY + barHeight + spacing - 1);
-        ctx.restore();
-        // Hygene (blue)
-        ctx.save();
-        ctx.fillStyle = '#039be5';
-        ctx.fillRect(
-            this.x + iconSize + iconOffset,
-            startY + 2 * (barHeight + spacing),
-            (barWidth - iconSize - iconOffset) * (this.hygene / 100),
-            barHeight
-        );
-        ctx.strokeStyle = '#01579b';
-        ctx.strokeRect(this.x + iconSize + iconOffset, startY + 2 * (barHeight + spacing), barWidth - iconSize - iconOffset, barHeight);
-        ctx.font = `bold ${iconSize}px sans-serif`;
-        ctx.textBaseline = 'top';
-        ctx.fillText('🧼', this.x, startY + 2 * (barHeight + spacing) - 1);
-        ctx.restore();
+        // Draw stats bars below the dinosaur ONLY if selected
+        if (this.selected) {
+            const barWidth = this.size;
+            const barHeight = 7;
+            const spacing = 3;
+            const iconSize = 10; // Match bar height
+            const iconOffset = 4;
+            const startY = this.y + this.size + 5;
+            // Health (red)
+            ctx.save();
+            ctx.fillStyle = '#e53935';
+            ctx.fillRect(
+                this.x + iconSize + iconOffset,
+                startY,
+                (barWidth - iconSize - iconOffset) * (this.health / 100),
+                barHeight
+            );
+            ctx.strokeStyle = '#b71c1c';
+            ctx.strokeRect(this.x + iconSize + iconOffset, startY, barWidth - iconSize - iconOffset, barHeight);
+            ctx.font = `bold ${iconSize}px sans-serif`;
+            ctx.textBaseline = 'top';
+            ctx.fillText('❤', this.x, startY - 1);
+            ctx.restore();
+            // Hunger (yellow)
+            ctx.save();
+            ctx.fillStyle = '#fbc02d';
+            ctx.fillRect(
+                this.x + iconSize + iconOffset,
+                startY + barHeight + spacing,
+                (barWidth - iconSize - iconOffset) * (this.hunger / 100),
+                barHeight
+            );
+            ctx.strokeStyle = '#f57c00';
+            ctx.strokeRect(this.x + iconSize + iconOffset, startY + barHeight + spacing, barWidth - iconSize - iconOffset, barHeight);
+            ctx.font = `bold ${iconSize}px sans-serif`;
+            ctx.textBaseline = 'top';
+            ctx.fillText('🍖', this.x, startY + barHeight + spacing - 1);
+            ctx.restore();
+            // Hygene (blue)
+            ctx.save();
+            ctx.fillStyle = '#039be5';
+            ctx.fillRect(
+                this.x + iconSize + iconOffset,
+                startY + 2 * (barHeight + spacing),
+                (barWidth - iconSize - iconOffset) * (this.hygene / 100),
+                barHeight
+            );
+            ctx.strokeStyle = '#01579b';
+            ctx.strokeRect(this.x + iconSize + iconOffset, startY + 2 * (barHeight + spacing), barWidth - iconSize - iconOffset, barHeight);
+            ctx.font = `bold ${iconSize}px sans-serif`;
+            ctx.textBaseline = 'top';
+            ctx.fillText('🧼', this.x, startY + 2 * (barHeight + spacing) - 1);
+            ctx.restore();
+        }
     }
 
     isPointInside(px, py) {
