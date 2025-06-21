@@ -705,31 +705,16 @@ function enableRandomMovement() {
                 decrease = (Math.random() * 1.0) / 5;
                 let statBefore = dino.health;
                 dino.health = Math.max(0, dino.health - decrease);
-                let statAfter = dino.health;
-                if (statBefore > 0 && statAfter === 0) {
-                    points = Math.max(0, points - 1);
-                    updatePointsDisplay();
-                }
             } else if (stat === 1) {
                 // Hunger: normal speed
                 decrease = Math.random() * 1.0;
                 let statBefore = dino.hunger;
                 dino.hunger = Math.max(0, dino.hunger - decrease);
-                let statAfter = dino.hunger;
-                if (statBefore > 0 && statAfter === 0) {
-                    points = Math.max(0, points - 1);
-                    updatePointsDisplay();
-                }
             } else {
                 // Hygene: 2.5x slower than hunger
                 decrease = (Math.random() * 1.0) / 2.5;
                 let statBefore = dino.hygene;
                 dino.hygene = Math.max(0, dino.hygene - decrease);
-                let statAfter = dino.hygene;
-                if (statBefore > 0 && statAfter === 0) {
-                    points = Math.max(0, points - 1);
-                    updatePointsDisplay();
-                }
             }
         }
         draw();
