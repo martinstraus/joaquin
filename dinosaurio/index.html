@@ -121,6 +121,18 @@
     </button>
 </div>
 <canvas id="gameCanvas"></canvas>
+
+<!-- Welcome Modal -->
+<div id="welcomeModal" style="position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.45); z-index:300; display:flex; align-items:center; justify-content:center;">
+  <div style="background:#fff8e1; border-radius:18px; box-shadow:0 4px 24px #0003; padding:36px 48px; text-align:center; min-width:320px;">
+    <h2 style="color:#4caf50; margin-bottom:18px;">¡Bienvenido, cuidador de dinosaurios!</h2>
+    <p style="font-size:1.2em; color:#6d4c41; margin-bottom:18px;">Tu misión es cuidar a los dinosaurios para que no tengan hambre, se bañen, y estén sanos.</p>
+    <p style="font-size:1.2em; color:#6d4c41; margin-bottom:18px;">Por favor, ingresa tu nombre para comenzar:</p>
+    <input id="playerNameInput" type="text" placeholder="Tu nombre" style="font-size:1.1em; padding:8px 16px; border-radius:8px; border:1px solid #bdbdbd; margin-bottom:18px; width:80%;"><br>
+    <button id="welcomeContinueBtn" style="font-size:1.1em; padding:10px 32px; background:#4caf50; color:#fff; border:none; border-radius:8px; cursor:pointer; margin-top:10px;">Comenzar</button>
+  </div>
+</div>
+
 <script>
 let eggs = [];
 const eggIcon = '🥚';
@@ -443,6 +455,7 @@ dinosaurs.forEach(d => {
 });
 
 let points = 0;
+let playerName = '';
 
 function updatePointsDisplay() {
     let el = document.getElementById('pointsDisplay');
@@ -462,11 +475,36 @@ function updatePointsDisplay() {
         el.style.zIndex = 100;
         document.body.appendChild(el);
     }
-    el.textContent = `Puntos: ${points}`;
+    el.textContent = playerName ? `Puntos de ${playerName}: ${points}` : `Puntos: ${points}`;
 }
 
-// Add drag-and-drop logic
-let draggingStat = null;
+// Show welcome modal and handle name input
+window.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('welcomeModal');
+    const input = document.getElementById('playerNameInput');
+    const btn = document.getElementById('welcomeContinueBtn');
+    input.focus();
+    btn.addEventListener('click', () => {
+        const name = input.value.trim();
+        if (name.length > 0) {
+            playerName = name;
+            modal.style.display = 'none';
+            updatePointsDisplay();
+            // Start the game after entering the name
+            startGame();
+        } else {
+            input.style.borderColor = '#e53935';
+            input.focus();
+        }
+    });
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btn.click();
+    });
+});
+
+// Remove the startGameBtn click event, since the game now starts after entering the name
+// document.getElementById('startGameBtn').addEventListener('click', startGame);
+document.getElementById('startGameBtn').style.display = 'none';
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebarItems = document.querySelectorAll('.sidebar-item');
