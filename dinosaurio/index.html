@@ -334,6 +334,29 @@ dinosaurs.forEach(d => {
     };
 });
 
+let points = 0;
+
+function updatePointsDisplay() {
+    let el = document.getElementById('pointsDisplay');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'pointsDisplay';
+        el.style.position = 'fixed';
+        el.style.top = '20px';
+        el.style.right = '30px';
+        el.style.background = '#fff8e1';
+        el.style.color = '#6d4c41';
+        el.style.fontSize = '1.5em';
+        el.style.fontWeight = 'bold';
+        el.style.padding = '10px 24px';
+        el.style.borderRadius = '12px';
+        el.style.boxShadow = '0 2px 8px #0002';
+        el.style.zIndex = 100;
+        document.body.appendChild(el);
+    }
+    el.textContent = `Puntos: ${points}`;
+}
+
 // Add drag-and-drop logic
 let draggingStat = null;
 
@@ -348,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             draggingStat = null;
         });
     });
+    updatePointsDisplay();
 });
 
 canvas.addEventListener('dragover', (e) => {
@@ -362,13 +386,26 @@ canvas.addEventListener('drop', (e) => {
     const my = e.clientY - rect.top;
     for (const dino of dinosaurs) {
         if (dino.isPointInside(mx, my)) {
-            if (draggingStat === 'health') dino.health = 100;
-            if (draggingStat === 'hygene') dino.hygene = 100;
-            if (draggingStat === 'meat' && dino.type === 1) {
-                dino.hunger = 100;
+            let statReplenished = false;
+            if (draggingStat === 'health' && dino.health < 100) {
+                dino.health = 100;
+                statReplenished = true;
             }
-            if (draggingStat === 'veggie' && dino.type === 0) {
+            if (draggingStat === 'hygene' && dino.hygene < 100) {
+                dino.hygene = 100;
+                statReplenished = true;
+            }
+            if (draggingStat === 'meat' && dino.type === 1 && dino.hunger < 100) {
                 dino.hunger = 100;
+                statReplenished = true;
+            }
+            if (draggingStat === 'veggie' && dino.type === 0 && dino.hunger < 100) {
+                dino.hunger = 100;
+                statReplenished = true;
+            }
+            if (statReplenished) {
+                points++;
+                updatePointsDisplay();
             }
             draw();
             break;
@@ -417,12 +454,24 @@ function enableRandomMovement() {
             // Randomly pick a stat to decrease: 0=health, 1=hunger, 2=hygene
             const stat = Math.floor(Math.random() * 3);
             const decrease = Math.random() * 1.0; // 0 to <1.0
+            let statBefore, statAfter;
             if (stat === 0) {
+                statBefore = dino.health;
                 dino.health = Math.max(0, dino.health - decrease);
+                statAfter = dino.health;
             } else if (stat === 1) {
+                statBefore = dino.hunger;
                 dino.hunger = Math.max(0, dino.hunger - decrease);
+                statAfter = dino.hunger;
             } else {
+                statBefore = dino.hygene;
                 dino.hygene = Math.max(0, dino.hygene - decrease);
+                statAfter = dino.hygene;
+            }
+            // Subtract a point if a stat just reached zero
+            if (statBefore > 0 && statAfter === 0) {
+                points = Math.max(0, points - 1);
+                updatePointsDisplay();
             }
         }
         draw();
