@@ -19,8 +19,9 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 180px;
-            height: 100vh;
+            width: 80px;
+            height: auto;
+            min-height: 180px;
             background: #b2dfdb;
             box-shadow: 2px 0 8px #0002;
             z-index: 10;
@@ -28,6 +29,8 @@
             flex-direction: column;
             align-items: center;
             padding-top: 30px;
+            padding-bottom: 30px;
+            justify-content: center;
         }
         .sidebar h2 {
             font-size: 1.1em;
@@ -47,6 +50,27 @@
         .sidebar button:hover {
             background: #388e3c;
         }
+        .sidebar-items {
+            margin-top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+        }
+        .sidebar-item {
+            width: 100%;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 1.5em;
+            cursor: grab;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .sidebar-item:hover {
+            background: #4caf50;
+            color: #fff;
+        }
         canvas { 
             display: block; 
             margin: 0; 
@@ -60,9 +84,20 @@
 </head>
 <body>
 <div class="sidebar">
-    <h2>Add Dinosaur</h2>
-    <button onclick="addDinosaur(0)">Add Sauropod 🦕</button>
-    <button onclick="addDinosaur(1)">Add T-Rex 🦖</button>
+    <div class="sidebar-items">
+        <div draggable="true" class="sidebar-item" data-type="health" title="Heal">
+            <span style="font-size:22px; color:#e53935;">❤</span>
+        </div>
+        <div draggable="true" class="sidebar-item" data-type="meat" title="Feed Meat">
+            <span style="font-size:22px;">🍖</span>
+        </div>
+        <div draggable="true" class="sidebar-item" data-type="veggie" title="Feed Veggie">
+            <span style="font-size:22px;">🥦</span>
+        </div>
+        <div draggable="true" class="sidebar-item" data-type="hygene" title="Clean">
+            <span style="font-size:22px;">🧼</span>
+        </div>
+    </div>
 </div>
 <canvas id="gameCanvas"></canvas>
 <script>
@@ -87,14 +122,16 @@ const dinoImages = [
     "images/trex.png"  // T-Rex
 ];
 
+// Dinosaur class: add a type property (0 = sauropod, 1 = trex)
 class Dinosaur {
-    constructor(x, y, imgUrl) {
+    constructor(x, y, imgUrl, type) {
         this.x = x;
         this.y = y;
         this.size = 100;
         this.img = new Image();
         this.img.src = imgUrl;
         this.selected = false;
+        this.type = type; // 0 = sauropod, 1 = trex
         // Add stats
         this.health = 100;
         this.hunger = 100;
@@ -183,8 +220,8 @@ class Dinosaur {
 }
 
 const dinosaurs = [
-    new Dinosaur(200, 300, dinoImages[0]),
-    new Dinosaur(500, 200, dinoImages[1])
+    new Dinosaur(200, 300, dinoImages[0], 0),
+    new Dinosaur(500, 200, dinoImages[1], 1)
 ];
 
 resizeCanvas();
@@ -248,7 +285,7 @@ function placeRandomEgg() {
             hatchSound.play();
             // Random dino type: 0 or 1
             const type = Math.floor(Math.random() * dinoImages.length);
-            const dino = new Dinosaur(x, y, dinoImages[type]);
+            const dino = new Dinosaur(x, y, dinoImages[type], type);
             dinosaurs.push(dino);
             draw();
         }
@@ -297,19 +334,48 @@ dinosaurs.forEach(d => {
     };
 });
 
-function addDinosaur(type) {
-    // Avoid left menu area (sidebar width = 180px)
-    const minX = 200;
-    const maxX = canvas.width - 120;
-    const minY = 20;
-    const maxY = canvas.height - 120;
-    const x = Math.floor(Math.random() * (maxX - minX)) + minX;
-    const y = Math.floor(Math.random() * (maxY - minY)) + minY;
-    const dino = new Dinosaur(x, y, dinoImages[type]);
-    dino.img.onload = () => draw();
-    dinosaurs.push(dino);
-    draw();
-}
+// Add drag-and-drop logic
+let draggingStat = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            draggingStat = item.getAttribute('data-type');
+            e.dataTransfer.setData('text/plain', draggingStat);
+        });
+        item.addEventListener('dragend', () => {
+            draggingStat = null;
+        });
+    });
+});
+
+canvas.addEventListener('dragover', (e) => {
+    if (draggingStat) {
+        e.preventDefault();
+    }
+});
+canvas.addEventListener('drop', (e) => {
+    if (!draggingStat) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    for (const dino of dinosaurs) {
+        if (dino.isPointInside(mx, my)) {
+            if (draggingStat === 'health') dino.health = 100;
+            if (draggingStat === 'hygene') dino.hygene = 100;
+            if (draggingStat === 'meat' && dino.type === 1) {
+                dino.hunger = 100;
+            }
+            if (draggingStat === 'veggie' && dino.type === 0) {
+                dino.hunger = 100;
+            }
+            draw();
+            break;
+        }
+    }
+    draggingStat = null;
+});
 
 // Remove all drag and selection logic from event listeners
 canvas.addEventListener('mousedown', (e) => {
@@ -344,7 +410,10 @@ enableRandomMovement();
 function enableRandomMovement() {
     setInterval(() => {
         for (const dino of dinosaurs) {
-            dino.moveRandomly(canvas.width, canvas.height);
+            // Only move if all stats are above zero
+            if (dino.health > 0 && dino.hunger > 0 && dino.hygene > 0) {
+                dino.moveRandomly(canvas.width, canvas.height);
+            }
             // Randomly pick a stat to decrease: 0=health, 1=hunger, 2=hygene
             const stat = Math.floor(Math.random() * 3);
             const decrease = Math.random() * 1.0; // 0 to <1.0
