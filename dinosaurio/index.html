@@ -219,12 +219,12 @@ class Dinosaur {
     }
 }
 
-const dinosaurs = [
-    new Dinosaur(200, 300, dinoImages[0], 0),
-    new Dinosaur(500, 200, dinoImages[1], 1)
-];
+let dinosaurs = [];
 
 resizeCanvas();
+
+// Place an initial egg at a random location
+placeRandomEgg();
 
 function drawHexagon(x, y, size, fillStyle, strokeStyle) {
     ctx.save();
@@ -239,9 +239,6 @@ function drawHexagon(x, y, size, fillStyle, strokeStyle) {
     ctx.closePath();
     ctx.fillStyle = fillStyle;
     ctx.fill();
-    ctx.strokeStyle = strokeStyle;
-    ctx.lineWidth = 2;
-    ctx.stroke();
     ctx.restore();
 }
 
