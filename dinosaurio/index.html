@@ -605,8 +605,24 @@ function enableRandomMovement() {
     }, 100);
 }
 
-// At the end of script, start egg scheduling
-scheduleNextEgg();
+// Only start egg scheduling in startGame()
+function startGame() {
+    if (gameStarted) return;
+    gameStarted = true;
+    document.getElementById('startGameBtn').style.display = 'none';
+    // Play background music if enabled
+    if (typeof musicEnabled === 'undefined' || musicEnabled) {
+        bgMusic.currentTime = 0;
+        bgMusic.volume = 0.2;
+        bgMusic.play();
+    }
+    // Place an initial egg at a random location
+    placeRandomEgg();
+    // Start egg scheduling
+    scheduleNextEgg();
+    // Start random movement
+    enableRandomMovement();
+}
 </script>
 </body>
 </html>
