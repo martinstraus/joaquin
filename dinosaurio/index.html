@@ -103,17 +103,23 @@
 
 <div class="sidebar">
     <div class="sidebar-items">
-        <div draggable="true" class="sidebar-item" data-type="health" title="Heal">
-            <span style="font-size:22px; color:#e53935;">❤</span>
-        </div>
-        <div draggable="true" class="sidebar-item" data-type="meat" title="Feed Meat">
+        <div draggable="true" class="sidebar-item" data-type="meat" title="Carne">
             <span style="font-size:22px;">🍖</span>
         </div>
-        <div draggable="true" class="sidebar-item" data-type="veggie" title="Feed Veggie">
+        <div draggable="true" class="sidebar-item" data-type="veggie" title="Vegetales">
             <span style="font-size:22px;">🥦</span>
+        </div>
+        <div draggable="true" class="sidebar-item" data-type="egg" title="Huevos">
+            <span style="font-size:22px;">🥚</span>
+        </div>
+        <div draggable="true" class="sidebar-item" data-type="shrimp" title="Camarones">
+            <span style="font-size:22px;">🦐</span>
         </div>
         <div draggable="true" class="sidebar-item" data-type="hygene" title="Clean">
             <span style="font-size:22px;">🧼</span>
+        </div>
+        <div draggable="true" class="sidebar-item" data-type="health" title="Heal">
+            <span style="font-size:22px; color:#e53935;">❤</span>
         </div>
     </div>
     <button id="musicToggleBtn" style="margin-top:30px; background:none; border:none; padding:0; cursor:pointer; width:100%; text-align:center;">
@@ -149,14 +155,61 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 
-// Dinosaur image URLs (OpenMoji PNGs)
-const dinoImages = [
-    "images/sauropod.png", // Sauropod
-    "images/trex.png"  // T-Rex
+class FoodType {
+    constructor(name, imgUrl) {
+        this.name = name;
+        this.imgUrl = imgUrl;
+    }
+}
+
+const foodTypes = [
+    new FoodType('meat', '🍖'),
+    new FoodType('veggie', '🥦'),
+    new FoodType('egg', '🥚'),
+    new FoodType('shrimp', '🦐')
 ];
-const dinoSounds = [
-    new Audio('./sounds/sauropod_growl.mp3'),
-    new Audio('./sounds/t_rex_growl.mp3')
+
+class DietType {
+    constructor(name, foodTypes) {
+        this.name = name;
+        this.foodTypes = foodTypes;
+    }
+
+    accepts(food) {
+        // Check if the food type is in this diet's food types
+        return this.foodTypes.some(ft => ft.name === food.name);
+    }
+}
+
+const dietTypes = [
+    new DietType('Carnívoro', [foodTypes[0], foodTypes[2]]), // Meat, Egg
+    new DietType('Herbívoro', [foodTypes[1]]), // Veggie
+    new DietType('Carnívoro marino', [foodTypes[0], foodTypes[3]]),
+    new DietType('Omnívoro', foodTypes) // All types
+];
+
+class Species {
+    constructor(name, img, sound, diet) {
+        this.name = name;
+        this.img = new Image();
+        this.img.src = img;
+        this.sound = new Audio(sound);
+        this.diet = diet;
+    }
+
+    growl() {
+        this.sound.currentTime = 0; // Reset sound to start
+        this.sound.play();
+    }
+}
+
+const species = [
+    new Species('Sauropod', 'images/sauropod.png', './sounds/sauropod.mp3', dietTypes[1]),
+    new Species('T-Rex', 'images/trex.png', './sounds/t_rex.mp3', dietTypes[0]),
+    new Species('Triceratops', 'images/triceratops.png', './sounds/triceratops.mp3', dietTypes[1]),
+    new Species('Pterodactyl', 'images/pterodactyl.png', './sounds/pterodactyl.mp3', dietTypes[0]),
+    new Species('Mosasaurus', 'images/mosasaurus.png', './sounds/mosasaurus.mp3', dietTypes[2]),
+    new Species('Velociraptor', 'images/velociraptor.png', './sounds/velociraptor.mp3', dietTypes[0])
 ];
 
 // Bone image for dead dinosaurs
@@ -165,12 +218,10 @@ boneImg.src = 'images/bone.png';
 
 // Dinosaur class: add a type property (0 = sauropod, 1 = trex)
 class Dinosaur {
-    constructor(x, y, imgUrl, type) {
+    constructor(x, y, type, species) {
         this.x = x;
         this.y = y;
         this.size = 100;
-        this.img = new Image();
-        this.img.src = imgUrl;
         this.selected = false;
         this.type = type; // 0 = sauropod, 1 = trex
         this.health = 100;
@@ -180,6 +231,7 @@ class Dinosaur {
         this.dead = false;
         this.deadSince = null;
         this.zeroStatsSince = null;
+        this.species = species;
     }
 
     draw(ctx) {
@@ -193,9 +245,9 @@ class Dinosaur {
         if (this.facing === 'left') {
             ctx.translate(this.x + this.size, this.y);
             ctx.scale(-1, 1);
-            ctx.drawImage(this.img, 0, 0, this.size, this.size);
+            ctx.drawImage(this.species.img, 0, 0, this.size, this.size);
         } else {
-            ctx.drawImage(this.img, this.x, this.y, this.size, this.size);
+            ctx.drawImage(this.species.img, this.x, this.y, this.size, this.size);
         }
         ctx.restore();
         // Show stat icons above dino if any stat is below 50
@@ -292,7 +344,19 @@ class Dinosaur {
     }
 
     growl() {
-        dinoSounds[this.type].play()
+        this.species.growl();
+    }
+
+    eat(foodName) {
+        // Check if the food type is in this dinosaur's diet
+        const foodType = foodTypes.find(ft => ft.name === foodName);
+        if (this.species.diet.accepts(foodType)) {
+            // Increase hunger and return true
+            this.hunger = 100;
+            return true;
+        }
+        // Wrong food type for this dinosaur
+        return false;
     }
 }
 
@@ -364,6 +428,14 @@ function drawHexGrid(size) {
 
 const hatchSound = new Audio('./sounds/egg_crack.mp3'); // Fun pop sound
 
+function createNewDinosaur(x,y) {
+     // Random dino type: 0 or 1
+    const type = Math.floor(Math.random() * species.length);
+    const dino = new Dinosaur(x, y, type, species[type]);
+    dinosaurs.push(dino);
+    draw();
+}
+
 function placeRandomEgg() {
     // Don't place new eggs if max dinosaurs reached
     if (dinosaurs.length >= 15) return;
@@ -391,11 +463,7 @@ function placeRandomEgg() {
                     // Remove egg after sound ends
                     const idx2 = eggs.indexOf(egg);
                     if (idx2 !== -1) eggs.splice(idx2, 1);
-                    // Random dino type: 0 or 1
-                    const type = Math.floor(Math.random() * dinoImages.length);
-                    const dino = new Dinosaur(x, y, dinoImages[type], type);
-                    dinosaurs.push(dino);
-                    draw();
+                    createNewDinosaur(x,y);
                     hatchSound.onended = null;
                 };
                 // Keep egg visible until sound ends
@@ -544,6 +612,11 @@ canvas.addEventListener('dragover', (e) => {
         e.preventDefault();
     }
 });
+
+function isFood(draggingStat) {
+    return ['meat', 'veggie', 'egg', 'shrimp'].includes(draggingStat);
+}
+
 canvas.addEventListener('drop', (e) => {
     if (!draggingStat) return;
     const rect = canvas.getBoundingClientRect();
@@ -561,19 +634,10 @@ canvas.addEventListener('drop', (e) => {
                 dino.hygene = 100;
                 statReplenished = true;
             }
-            if (draggingStat === 'meat') {
-                if (dino.type === 1 && dino.hunger < 100) {
-                    dino.hunger = 100;
+            if (isFood(draggingStat) && dino.hunger < 100) {
+                if (dino.eat(draggingStat)) {
                     statReplenished = true;
-                } else if (dino.type === 0) {
-                    wrongFood = true;
-                }
-            }
-            if (draggingStat === 'veggie') {
-                if (dino.type === 0 && dino.hunger < 100) {
-                    dino.hunger = 100;
-                    statReplenished = true;
-                } else if (dino.type === 1) {
+                } else {
                     wrongFood = true;
                 }
             }
