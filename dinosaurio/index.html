@@ -147,6 +147,10 @@ const dinoSounds = [
     new Audio('./sounds/t_rex_growl.mp3')
 ];
 
+// Bone image for dead dinosaurs
+const boneImg = new Image();
+boneImg.src = 'images/bone.png';
+
 // Dinosaur class: add a type property (0 = sauropod, 1 = trex)
 class Dinosaur {
     constructor(x, y, imgUrl, type) {
@@ -157,15 +161,22 @@ class Dinosaur {
         this.img.src = imgUrl;
         this.selected = false;
         this.type = type; // 0 = sauropod, 1 = trex
-        // Add stats
         this.health = 100;
         this.hunger = 100;
         this.hygene = 100;
-        // Randomly face left or right
         this.facing = Math.random() < 0.5 ? 'left' : 'right';
+        this.dead = false;
+        this.deadSince = null;
+        this.zeroStatsSince = null;
     }
 
     draw(ctx) {
+        if (this.dead) {
+            ctx.save();
+            ctx.drawImage(boneImg, this.x, this.y, this.size, this.size);
+            ctx.restore();
+            return;
+        }
         ctx.save();
         if (this.facing === 'left') {
             ctx.translate(this.x + this.size, this.y);
@@ -556,7 +567,9 @@ canvas.addEventListener('mousedown', (e) => {
             dinosaurs.forEach(d => d.selected = false);
             dino.selected = true;
             found = true;
-            dino.growl();
+            if (!dino.dead) {
+                dino.growl();
+            }
             break;
         }
     }
@@ -639,6 +652,33 @@ function startGame() {
     // Start random movement
     enableRandomMovement();
 }
+
+// Add death check interval
+setInterval(() => {
+    const now = Date.now();
+    for (let i = dinosaurs.length - 1; i >= 0; i--) {
+        const dino = dinosaurs[i];
+        if (dino.dead) {
+            // Remove bone after 10 seconds
+            if (dino.deadSince && now - dino.deadSince > 10000) {
+                dinosaurs.splice(i, 1);
+            }
+            continue;
+        }
+        if (dino.health === 0 && dino.hunger === 0 && dino.hygene === 0) {
+            if (!dino.zeroStatsSince) {
+                dino.zeroStatsSince = now;
+            } else if (now - dino.zeroStatsSince > 20000) {
+                dino.dead = true;
+                dino.deadSince = now;
+                dino.selected = false;
+            }
+        } else {
+            dino.zeroStatsSince = null;
+        }
+    }
+    draw();
+}, 500);
 </script>
 </body>
 </html>
