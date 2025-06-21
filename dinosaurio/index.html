@@ -136,20 +136,20 @@ class Dinosaur {
         this.health = 100;
         this.hunger = 100;
         this.hygene = 100;
+        // Randomly face left or right
+        this.facing = Math.random() < 0.5 ? 'left' : 'right';
     }
 
     draw(ctx) {
-        // Selection outline
-        if (this.selected) {
-            ctx.save();
-            ctx.strokeStyle = "#ffeb3b";
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.arc(this.x + this.size/2, this.y + this.size/2, this.size/2 + 8, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.restore();
+        ctx.save();
+        if (this.facing === 'left') {
+            ctx.translate(this.x + this.size, this.y);
+            ctx.scale(-1, 1);
+            ctx.drawImage(this.img, 0, 0, this.size, this.size);
+        } else {
+            ctx.drawImage(this.img, this.x, this.y, this.size, this.size);
         }
-        ctx.drawImage(this.img, this.x, this.y, this.size, this.size);
+        ctx.restore();
         // Draw stats bars below the dinosaur
         const barWidth = this.size;
         const barHeight = 7;
