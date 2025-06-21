@@ -83,6 +83,24 @@
     </style>
 </head>
 <body>
+
+<button id="startGameBtn" style="
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    font-size: 2em;
+    padding: 24px 48px;
+    background: linear-gradient(90deg, #ffb300, #ff7043);
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px #0003;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+">Comenzar</button>
+
 <div class="sidebar">
     <div class="sidebar-items">
         <div draggable="true" class="sidebar-item" data-type="health" title="Heal">
@@ -225,8 +243,22 @@ let dinosaurs = [];
 
 resizeCanvas();
 
-// Place an initial egg at a random location
-placeRandomEgg();
+let gameStarted = false;
+
+function startGame() {
+    if (gameStarted) return;
+    gameStarted = true;
+    document.getElementById('startGameBtn').style.display = 'none';
+    // Place an initial egg at a random location
+    placeRandomEgg();
+    // Start egg scheduling
+    scheduleNextEgg();
+    // Start random movement
+    enableRandomMovement();
+}
+
+document.getElementById('startGameBtn').addEventListener('click', startGame);
+
 
 function drawHexagon(x, y, size, fillStyle, strokeStyle) {
     ctx.save();
@@ -260,7 +292,7 @@ function drawHexGrid(size) {
     }
 }
 
-const hatchSound = new Audio('https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa4c7b.mp3'); // Fun pop sound
+const hatchSound = new Audio('./sounds/egg_crack.mp3'); // Fun pop sound
 
 function placeRandomEgg() {
     const minX = 200;
