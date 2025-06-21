@@ -15,7 +15,7 @@ const team2 = document.getElementById('team2');
 const instructions = document.getElementById('instructions');
 const winner = document.getElementById('winner');
 const players = ['Joaquín', 'Martín'];
-
+const flipSound = new Audio('./sounds/flip_card.mp3');
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -68,6 +68,8 @@ function renderGrid() {
 
 function revealCard(idx) {
   if (lock || revealed.includes(idx) || matched.includes(idx)) return;
+  flipSound.currentTime = 0;
+  flipSound.play();
   revealed.push(idx);
   renderGrid();
   if (revealed.length === 2) {
@@ -79,6 +81,10 @@ function revealCard(idx) {
 function checkMatch() {
   const [i1, i2] = revealed;
   if (cards[i1] === cards[i2]) {
+    // Play match sound
+    const matchSound = new Audio('./sounds/match.mp3');
+    matchSound.currentTime = 0;
+    matchSound.play();
     matched.push(i1, i2);
     scores[currentTeam]++;
     updateScores();
@@ -91,6 +97,9 @@ function checkMatch() {
     lock = false;
     renderGrid();
   } else {
+    const matchSound = new Audio('./sounds/error.mp3');
+    matchSound.currentTime = 0;
+    matchSound.play();
     instructions.textContent = `¡No hay coincidencia! Ahora le toca a ${players[currentTeam]}.`;
     setTimeout(() => {
       revealed = [];
