@@ -326,6 +326,8 @@ function drawHexGrid(size) {
 const hatchSound = new Audio('./sounds/egg_crack.mp3'); // Fun pop sound
 
 function placeRandomEgg() {
+    // Don't place new eggs if max dinosaurs reached
+    if (dinosaurs.length >= 15) return;
     const minX = 200;
     const maxX = canvas.width - eggSize;
     const minY = 20;
@@ -341,15 +343,22 @@ function placeRandomEgg() {
         // When hatching, replace egg with a random dinosaur
         const idx = eggs.indexOf(egg);
         if (idx !== -1) {
-            eggs.splice(idx, 1);
-            // Play hatch sound
-            hatchSound.currentTime = 0;
-            hatchSound.play();
-            // Random dino type: 0 or 1
-            const type = Math.floor(Math.random() * dinoImages.length);
-            const dino = new Dinosaur(x, y, dinoImages[type], type);
-            dinosaurs.push(dino);
-            draw();
+            // Only hatch if still under max
+            if (dinosaurs.length < 15) {
+                eggs.splice(idx, 1);
+                // Play hatch sound
+                hatchSound.currentTime = 0;
+                hatchSound.play();
+                // Random dino type: 0 or 1
+                const type = Math.floor(Math.random() * dinoImages.length);
+                const dino = new Dinosaur(x, y, dinoImages[type], type);
+                dinosaurs.push(dino);
+                draw();
+            } else {
+                // Remove egg if max reached
+                eggs.splice(idx, 1);
+                draw();
+            }
         }
     }, hatchTime);
 }
@@ -358,8 +367,11 @@ function scheduleNextEgg() {
     // Random delay: 20s to 40s
     const delay = 10000 + Math.random() * 10000;
     setTimeout(() => {
-        placeRandomEgg();
-        scheduleNextEgg();
+        // Only schedule new eggs if under max
+        if (dinosaurs.length < 15) {
+            placeRandomEgg();
+            scheduleNextEgg();
+        }
     }, delay);
 }
 
