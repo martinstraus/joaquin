@@ -172,6 +172,28 @@ class Dinosaur {
             ctx.drawImage(this.img, this.x, this.y, this.size, this.size);
         }
         ctx.restore();
+        // Show stat icons above dino if any stat is below 50
+        const lowStats = [];
+        if (this.health < 50) lowStats.push({icon: '❤', color: '#e53935'});
+        if (this.hunger < 50) lowStats.push({icon: this.type === 1 ? '🍖' : '🥦', color: '#fbc02d'});
+        if (this.hygene < 50) lowStats.push({icon: '🧼', color: '#039be5'});
+        if (lowStats.length > 0) {
+            ctx.save();
+            ctx.font = '28px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.globalAlpha = 0.92;
+            let totalWidth = 0;
+            const iconWidths = lowStats.map(s => ctx.measureText(s.icon).width);
+            totalWidth = iconWidths.reduce((a, b) => a + b, 0) + (lowStats.length - 1) * 8;
+            let x = this.x + this.size / 2 - totalWidth / 2;
+            for (let i = 0; i < lowStats.length; i++) {
+                ctx.fillStyle = lowStats[i].color;
+                ctx.fillText(lowStats[i].icon, x + iconWidths[i] / 2, this.y - 8);
+                x += iconWidths[i] + 8;
+            }
+            ctx.restore();
+        }
         // Draw stats bars below the dinosaur ONLY if selected
         if (this.selected) {
             const barWidth = this.size;
