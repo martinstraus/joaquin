@@ -359,6 +359,13 @@ function draw() {
         ctx.font = `${eggSize}px sans-serif`;
         ctx.textBaseline = 'top';
         ctx.fillText(eggIcon, egg.x, egg.y);
+        // If this egg is for a specific dino, draw a small dino icon above
+        if (egg.dinoIdx !== undefined) {
+            const img = species[egg.dinoIdx]?.img;
+            if (img && img.complete) {
+                ctx.drawImage(img, egg.x, egg.y - 28, 28, 28);
+            }
+        }
         ctx.restore();
     }
 
@@ -437,8 +444,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     sidebarItems.forEach(item => {
         item.addEventListener('dragstart', (e) => {
-            draggingStat = item.getAttribute('data-type');
-            e.dataTransfer.setData('text/plain', draggingStat);
+            if (item.classList.contains('dino-menu')) {
+                draggingStat = null;
+                e.dataTransfer.setData('text/plain', 'dino-' + item.getAttribute('data-dino'));
+            } else {
+                draggingStat = item.getAttribute('data-type');
+                e.dataTransfer.setData('text/plain', draggingStat);
+            }
         });
         item.addEventListener('dragend', () => {
             draggingStat = null;
@@ -477,6 +489,21 @@ function isFood(draggingStat) {
 }
 
 canvas.addEventListener('drop', (e) => {
+    const data = e.dataTransfer.getData('text/plain');
+    if (data && data.startsWith('dino-')) {
+        // Place an egg for the selected dinosaur type
+        const dinoIdx = parseInt(data.replace('dino-', ''));
+        if (!isNaN(dinoIdx) && dinoIdx >= 0 && dinoIdx < species.length && dinosaurs.length < 15) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            // Place an egg at the drop location for this species
+            placeEggForSpecies(mx, my, dinoIdx);
+            draw();
+        }
+        draggingStat = null;
+        return;
+    }
     if (!draggingStat) return;
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -515,6 +542,41 @@ canvas.addEventListener('drop', (e) => {
     }
     draggingStat = null;
 });
+
+function placeEggForSpecies(x, y, dinoIdx) {
+    // Place an egg at (x, y) that will hatch into the given species
+    if (dinosaurs.length >= 15) return;
+    const egg = { x, y, hatching: true, dinoIdx };
+    eggs.push(egg);
+    draw();
+    setTimeout(() => {
+        const idx = eggs.indexOf(egg);
+        if (idx !== -1) {
+            if (dinosaurs.length < 15) {
+                hatchSound.currentTime = 0;
+                hatchSound.play();
+                hatchSound.onended = () => {
+                    const idx2 = eggs.indexOf(egg);
+                    if (idx2 !== -1) eggs.splice(idx2, 1);
+                    createNewDinosaur(x, y, dinoIdx);
+                    hatchSound.onended = null;
+                };
+                draw();
+            } else {
+                eggs.splice(idx, 1);
+                draw();
+            }
+        }
+    }, 3000 + Math.random() * 3000);
+}
+
+function createNewDinosaur(x, y, forcedType) {
+    // If forcedType is provided, use it, else random
+    const type = typeof forcedType === 'number' ? forcedType : Math.floor(Math.random() * species.length);
+    const dino = new Dinosaur(x, y, type, species[type]);
+    dinosaurs.push(dino);
+    draw();
+}
 
 // Remove all drag and selection logic from event listeners
 canvas.addEventListener('mousedown', (e) => {
