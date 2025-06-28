@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <title>Dinosaur Canvas Game</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .star-menu { position: relative; }
+        .star-badge {
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: #ffd600;
+          color: #222;
+          font-weight: bold;
+          font-size: 0.8em;
+          padding: 2px 7px;
+          border-radius: 50%;
+          box-shadow: 0 1px 4px #0002;
+          min-width: 18px;
+          text-align: center;
+          pointer-events: none;
+        }
+    </style>
 </head>
 <body>
 
@@ -26,7 +44,11 @@
 
 <div class="sidebar">
     <div class="sidebar-items">
-        
+        <div id="starDisplay" class="sidebar-item star-menu" title="Estrellas" style="position:relative; font-size:1.6em; display:flex; align-items:center; justify-content:center; margin:4px 0;">
+            ⭐
+            <span id="starsBadge" class="star-badge"></span>
+        </div>
+        <div class="sidebar-divider"></div>
         <!-- Dinosaur menu items -->
         <div draggable="true" class="sidebar-item dino-menu" data-dino="0" title="Sauropod">
             <img src="images/sauropod.png" alt="Sauropod" style="width:32px; height:32px;">

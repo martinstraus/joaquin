@@ -233,24 +233,6 @@ bgMusic.volume = 0.5; // Set a reasonable volume
 const pointsSound = new Audio('./sounds/points.mp3');
 const errorSound = new Audio('./sounds/error.mp3');
 
-/*function startGame() {
-    if (gameStarted) return;
-    gameStarted = true;
-    document.getElementById('startGameBtn').style.display = 'none';
-    // Play background music if enabled
-    if (typeof musicEnabled === 'undefined' || musicEnabled) {
-        bgMusic.currentTime = 0;
-        bgMusic.volume = 0.2;
-        bgMusic.play();
-    }
-    // Place an initial egg at a random location
-    //placeRandomEgg();
-    // Start egg scheduling
-    //scheduleNextEgg();
-    // Start random movement
-    enableRandomMovement();
-}*/
-
 document.getElementById('startGameBtn').addEventListener('click', startGame);
 
 
@@ -385,6 +367,16 @@ dinosaurs.forEach(d => {
 
 let points = 0;
 let playerName = '';
+let stars = 0;
+let lastStarPoints = 0;
+const levelUpSound = new Audio('./sounds/level_up.mp3');
+
+function updateStarsDisplay() {
+    let starEl = document.getElementById('starDisplay');
+    let badge = document.getElementById('starsBadge');
+    badge.textContent = stars;
+    starEl.style.visibility = stars > 0 ? 'visible' : 'visible';
+}
 
 function updatePointsDisplay() {
     let el = document.getElementById('pointsDisplay');
@@ -405,6 +397,20 @@ function updatePointsDisplay() {
         document.body.appendChild(el);
     }
     el.textContent = playerName ? `Puntos de ${playerName}: ${points}` : `Puntos: ${points}`;
+    // Check for star collection
+    if (points >= 10 && Math.floor(points / 10) > Math.floor(lastStarPoints / 10)) {
+        const newStars = Math.floor(points / 10) - Math.floor(lastStarPoints / 10);
+        stars += newStars;
+        lastStarPoints = points;
+        updateStarsDisplay();
+        // Play level up sound for each new star
+        for (let i = 0; i < newStars; i++) {
+            setTimeout(() => {
+                levelUpSound.currentTime = 0;
+                levelUpSound.play();
+            }, i * 400); // stagger if multiple stars
+        }
+    }
 }
 
 // Show welcome modal and handle name input
@@ -452,6 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     updatePointsDisplay();
+    updateStarsDisplay();
 
     // Music toggle logic
     const musicToggleBtn = document.getElementById('musicToggleBtn');
