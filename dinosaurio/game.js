@@ -233,7 +233,7 @@ bgMusic.volume = 0.5; // Set a reasonable volume
 const pointsSound = new Audio('./sounds/points.mp3');
 const errorSound = new Audio('./sounds/error.mp3');
 
-function startGame() {
+/*function startGame() {
     if (gameStarted) return;
     gameStarted = true;
     document.getElementById('startGameBtn').style.display = 'none';
@@ -244,12 +244,12 @@ function startGame() {
         bgMusic.play();
     }
     // Place an initial egg at a random location
-    placeRandomEgg();
+    //placeRandomEgg();
     // Start egg scheduling
-    scheduleNextEgg();
+    //scheduleNextEgg();
     // Start random movement
     enableRandomMovement();
-}
+}*/
 
 document.getElementById('startGameBtn').addEventListener('click', startGame);
 
@@ -311,25 +311,19 @@ function placeRandomEgg() {
     eggs.push(egg);
     draw();
     setTimeout(() => {
-        // When hatching, play sound and after it ends, replace egg with a random dinosaur
         const idx = eggs.indexOf(egg);
         if (idx !== -1) {
-            // Only hatch if still under max
             if (dinosaurs.length < 15) {
-                // Play hatch sound
                 hatchSound.currentTime = 0;
                 hatchSound.play();
-                hatchSound.onended = () => {
-                    // Remove egg after sound ends
+                // Use a timeout to remove the egg and create the dinosaur after the sound duration
+                setTimeout(() => {
                     const idx2 = eggs.indexOf(egg);
                     if (idx2 !== -1) eggs.splice(idx2, 1);
-                    createNewDinosaur(x,y);
-                    hatchSound.onended = null;
-                };
-                // Keep egg visible until sound ends
-                draw();
+                    createNewDinosaur(x, y);
+                    draw();
+                }, hatchSound.duration ? hatchSound.duration * 1000 : 700); // fallback duration
             } else {
-                // Remove egg if max reached
                 eggs.splice(idx, 1);
                 draw();
             }
@@ -554,13 +548,12 @@ function placeEggForSpecies(x, y, dinoIdx) {
             if (dinosaurs.length < 15) {
                 hatchSound.currentTime = 0;
                 hatchSound.play();
-                hatchSound.onended = () => {
+                setTimeout(() => {
                     const idx2 = eggs.indexOf(egg);
                     if (idx2 !== -1) eggs.splice(idx2, 1);
                     createNewDinosaur(x, y, dinoIdx);
-                    hatchSound.onended = null;
-                };
-                draw();
+                    draw();
+                }, hatchSound.duration ? hatchSound.duration * 1000 : 700);
             } else {
                 eggs.splice(idx, 1);
                 draw();
@@ -653,9 +646,9 @@ function startGame() {
         bgMusic.play();
     }
     // Place an initial egg at a random location
-    placeRandomEgg();
+    //placeRandomEgg();
     // Start egg scheduling
-    scheduleNextEgg();
+    //scheduleNextEgg();
     // Start random movement
     enableRandomMovement();
 }
