@@ -370,12 +370,24 @@ let playerName = '';
 let stars = 0;
 let lastStarPoints = 0;
 const levelUpSound = new Audio('./sounds/level_up.mp3');
+const itemPickUpSound = new Audio('./sounds/item_pick_up.mp3');
+
 
 function updateStarsDisplay() {
     let starEl = document.getElementById('starDisplay');
     let badge = document.getElementById('starsBadge');
     badge.textContent = stars;
     starEl.style.visibility = stars > 0 ? 'visible' : 'visible';
+    // Enable/disable dragging based on star count
+    if (stars > 0) {
+        starEl.setAttribute('draggable', 'true');
+        starEl.style.opacity = '';
+        starEl.style.cursor = 'grab';
+    } else {
+        starEl.setAttribute('draggable', 'false');
+        starEl.style.opacity = '0.5';
+        starEl.style.cursor = 'not-allowed';
+    }
 }
 
 function updatePointsDisplay() {
@@ -406,8 +418,8 @@ function updatePointsDisplay() {
         // Play level up sound for each new star
         for (let i = 0; i < newStars; i++) {
             setTimeout(() => {
-                levelUpSound.currentTime = 0;
-                levelUpSound.play();
+                itemPickUpSound.currentTime = 0;
+                itemPickUpSound.play();
             }, i * 400); // stagger if multiple stars
         }
     }
@@ -444,10 +456,21 @@ document.getElementById('startGameBtn').style.display = 'none';
 document.addEventListener('DOMContentLoaded', () => {
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     sidebarItems.forEach(item => {
+        // Make star draggable only if there are stars to use
+        if (item.classList.contains('star-menu')) {
+            item.setAttribute('draggable', stars > 0 ? 'true' : 'false');
+        }
         item.addEventListener('dragstart', (e) => {
             if (item.classList.contains('dino-menu')) {
                 draggingStat = null;
                 e.dataTransfer.setData('text/plain', 'dino-' + item.getAttribute('data-dino'));
+            } else if (item.classList.contains('star-menu')) {
+                if (stars > 0) {
+                    draggingStat = 'star';
+                    e.dataTransfer.setData('text/plain', 'star');
+                } else {
+                    e.preventDefault();
+                }
             } else {
                 draggingStat = item.getAttribute('data-type');
                 e.dataTransfer.setData('text/plain', draggingStat);
@@ -490,6 +513,23 @@ function isFood(draggingStat) {
 
 canvas.addEventListener('drop', (e) => {
     const data = e.dataTransfer.getData('text/plain');
+    if (data === 'star') {
+        if (stars > 0) {
+            // Max all stats for all dinosaurs
+            dinosaurs.forEach(dino => {
+                dino.health = 100;
+                dino.hunger = 100;
+                dino.hygene = 100;
+            });
+            stars--;
+            levelUpSound.currentTime = 0;
+            levelUpSound.play();
+            updateStarsDisplay();
+            draw();
+        }
+        draggingStat = null;
+        return;
+    }
     if (data && data.startsWith('dino-')) {
         // Place an egg for the selected dinosaur type
         const dinoIdx = parseInt(data.replace('dino-', ''));
