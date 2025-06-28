@@ -6,13 +6,14 @@ const eggSize = 32;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+window.addEventListener('resize', resizeCanvas);
+
 // Resize canvas to fill window
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     draw();
 }
-window.addEventListener('resize', resizeCanvas);
 
 class FoodType {
     constructor(name, imgUrl) {
@@ -479,9 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 canvas.addEventListener('dragover', (e) => {
-    if (draggingStat) {
-        e.preventDefault();
-    }
+    e.preventDefault();
 });
 
 function isFood(draggingStat) {
